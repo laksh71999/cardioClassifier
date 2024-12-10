@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
+return()
+# get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+# string(REPLACE " " "_" ProjectId ${ProjectId})
+project(${ProjectId} LANGUAGES ASM C CXX )
+
+file(GLOB_RECURSE UT_SRC Tests/*.c  Tests/*.cpp Mocks/*.c  Mocks/*.cpp)
+file(GLOB_RECURSE UT_INCLUDES  Tests/*.h  Tests/*.hpp Mocks/*.h  Mocks/*.hpp )
+
+LIST(REMOVE_DUPLICATES UT_SRC)
+
+FOREACH(EACH_FILE ${UT_INCLUDES})
+GET_FILENAME_COMPONENT(_INCPATH ${EACH_FILE} DIRECTORY )
+LIST(APPEND UTINCPATH ${_INCPATH})
+ENDFOREACH()
+
+LIST(REMOVE_DUPLICATES UTINCPATH)
+set(CMAKE_CXX_FLAGS "-DGTEST_HAS_POSIX_RE=0 -DGTEST_HAS_CLONE=0 -DGTEST_HAS_EXCEPTIONS=0 -DGTEST_HAS_TR1_TUPLE=0 -DGTEST_HAS_STREAM_REDIRECTION=0 -DGTEST_HAS_RTTI=0 -DGTEST_HAS_PTHREAD=0")
+INCLUDE_DIRECTORIES(${UTINCPATH})
+link_directories(${CMAKE_SOURCE_DIR}/UnitTest/lib)
+SET(EXE_NAME "${ProjectId}_Test.elf")
+ADD_EXECUTABLE(${EXE_NAME} ${UT_SRC})
+MESSAGE(STATUS "${CMAKE_SOURCE_DIR}/UnitTest/lib")
+target_include_directories(${EXE_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/UnitTest/Inc ${CMAKE_SOURCE_DIR}/UnitTest/Inc/gtest ${CMAKE_SOURCE_DIR}/UnitTest/Inc/gmock)
+target_link_libraries(${EXE_NAME} ${ProjectId}_LIB gmock gtest CMSIS_LIB startup)
+set_target_properties(${EXE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
+
+
